@@ -1,0 +1,147 @@
+﻿@model IEnumerable<Test.ViewModel.LicenceViewModel>
+
+@{
+    ViewBag.Title = "Default";
+}
+
+<h2>查询证件信息</h2>
+
+@using (Html.BeginForm())
+{
+    <label>证照名称：</label>
+    <input type="text" name="Name" />
+    <label>是否需要年审：</label>
+    @*<select name="IsReview">
+            <option value="">--请选择--</option>
+            <option value="true">需要</option>
+            <option value="false">不需要</option>
+        </select>*@
+    @Html.DropDownList("IsReview", ViewBag.list as IEnumerable<SelectListItem>, "--请选择--")
+    <label>状态：</label>
+    @*<select name="State">
+            <option value="0">--请选择--</option>
+            <option value="1">在库</option>
+            <option value="2">借出</option>
+        </select>*@
+    <select name="State">
+        <option value="0" selected="selected">--请选择--</option>
+        <option value="1">借出</option>
+        <option value="2">在库</option>
+    </select>
+    <input type="submit" value="查询" class="btn btn-default" />
+    <a class="btn btn-default" href="@Url.Action("Add", "Home")">添加</a>
+}
+<table class="table">
+    <tr>
+        <th>
+            序号
+        </th>
+        <th>
+            证照名称
+        </th>
+        <th>
+            签发日期
+        </th>
+        <th>
+            有效期至
+        </th>
+        <th>
+            是否年审
+        </th>
+        <th>
+            下次年审日期
+        </th>
+        <th>
+            状态
+        </th>
+        <th>
+            操作
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IssueDate)
+            </td>
+            <td>
+                @(item.VaildDate == null ? "永久" : item.VaildDate.ToString())
+            </td>
+            <td>
+                @(item.IsReview == false ? "不需要" : "需要")
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReviewDate)
+            </td>
+            <td>
+                @(item.State == "借出" ? $"{item.State}({item.LendUserName})" : item.State)
+                @if (item.State.Contains("借出") && User.Identity.Name == item.LendUserName)
+                {
+
+                    <a href="javascript:;" onclick="Guihuan(@item.ID)">点击归还</a>
+                }
+                @*@Html.DisplayFor(modelItem => item.State)
+                    @if (item.State.Contains("借出"))
+                    {
+                        if (User.Identity.Name == item.LendUserName)
+                        {
+                        <a href="javascript:;" onclick="Guihuan(@item.ID)">点击归还</a>
+                        }
+                    }*@
+            </td>
+            <td>
+                @if (item.State.Contains("在库"))
+                {
+                    <a href="javascript:;" onclick="Jiechu(@item.ID)">借出</a>
+                }
+                <a href="javascript:;" onclick="Delete(@item.ID)">删除</a>
+            </td>
+        </tr>
+    }
+
+</table>
+<script>
+    function Guihuan(id) {
+        $.post(
+            "@Url.Action("UserGuihuan", "Home")", { id: id }, function (data) {
+                if (data.State == 1) {
+                    alert(data.Message);
+                    location.reload();
+                } else {
+                    alert(data.Message);
+                }
+            }
+            );
+    }
+    function Jiechu(id) {
+        $.post(
+            "@Url.Action("UserJiechu", "Home")", { id: id }, function (data) {
+                if (data.State == 1) {
+                    alert(data.Message);
+                    location.reload();
+                } else {
+                    alert(data.Message);
+                }
+            }
+            );
+    }
+    function Delete(id) {
+        $.post(
+            "@Url.Action("Delete", "Home")", { id: id }, function (data) {
+                if (data.State == 1) {
+                    alert(data.Message);
+                    location.reload();
+                } else {
+                    alert(data.Message);
+                }
+            }
+            );
+    }
+</script>
